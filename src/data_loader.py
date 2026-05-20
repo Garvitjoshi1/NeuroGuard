@@ -1,3 +1,4 @@
+# src/data_loader.py
 import pandas as pd
 from pathlib import Path
 from .utils import get_logger
@@ -11,34 +12,37 @@ REQUIRED_COLUMNS = [
     "heart_disease",
     "ever_married",
     "work_type",
-    "Residence_type",
-    "ave_glucose_level",
+    "residence_type",      # lowercase after cleaning
+    "avg_glucose_level",
     "bmi",
     "smoking_status",
-    "stroke"
+    "stroke",
 ]
 
 def load_data(path: str) -> pd.DataFrame:
     logger.info(f"Loading data from {path}")
     df = pd.read_csv(path)
-    
+
+    # Clean column names
     df.columns = (
         df.columns.str.strip()
         .str.lower()
-        .str.replace(" ","_")
-        .str.replace("-","_")
+        .str.replace(" ", "_")
+        .str.replace("-", "_")
     )
-    
+
+    # Drop ID if present
     if "id" in df.columns:
-        df = df.drop(columns = ["id"])
+        df = df.drop(columns=["id"])
         logger.info("Dropped 'id' column")
-        
-        missing = [col for col in REQUIRED_COLUMNS if col not in df.columns]
-        if missing:
-            raise ValueError(f"Missing required columns: {missing}")
-        
-        logger.info(f"Shape: {df.shape}")
-        logger.info(f"Missing values: \n{df.isnull.sum()}")
-        logger.info(f"Memory usage: {df.memory_usage(deep=True).sum() / 1024:.2f} KB")
-        
-        return df
+
+    # Check for required columns (must happen outside the 'if id' block)
+    missing = [col for col in REQUIRED_COLUMNS if col not in df.columns]
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}")
+
+    logger.info(f"Shape: {df.shape}")
+    logger.info(f"Missing values:\n{df.isnull().sum()}")
+    logger.info(f"Memory usage: {df.memory_usage(deep=True).sum() / 1024:.2f} KB")
+
+    return df

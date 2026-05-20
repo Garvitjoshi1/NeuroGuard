@@ -12,6 +12,7 @@ from .utils import get_logger
 from .data_loader import load_data
 from .preprocess import build_preprocessing_pipeline
 from imblearn.pipeline import Pipeline as ImbPipeline
+from .preprocess import build_full_pipeline
 
 logger = get_logger(__name__)
 
@@ -29,43 +30,42 @@ def main():
     
     base_pipeline = build_preprocessing_pipeline()
     classifiers = {
-        "LogisticRegression": LogisticRegression(max_iter=1000, random_state=42),
-        "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42),
-        "XGBoost": XGBClassifier(eval_metrics = "logloss", random_state = 42)
+    "LogisticRegression": LogisticRegression(max_iter=1000, random_state=42),
+    "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42),
+    "XGBoost": XGBClassifier(eval_metric="logloss", random_state=42),
     }
-    
+
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    scoring = ["roc_curve", "average_pipeline", "recall"]
+    scoring = ["roc_auc", "average_precision", "recall"]
+
     best_score = -1
     best_model_name = None
     best_pipeline = None
     
     for name, clf in classifiers.items():
         with mlflow.start_run(run_name=name):
-            pipe = base_pipeline.set_params(classifier_estimator = clf)
-            
-            from sklearn.base import clone
-            final_pipe = ImbPipeline(steps = base_pipeline.steps + [("classifier", clf)])
-            logger.info(f"Training {name} with 5-fold CV")
-            scores = cross_validate(final_pipe, X, y, cv = cv, scoring=scoring, n_jobs = 1)
-            
+            pipe = build_full_pipeline(clf)
+            logger.info(f"Training {name} with 5‑fold CV")
+            scores = cross_validate(pipe, X, y, cv=cv, scoring=scoring, n_jobs=-1)
+
             mlflow.log_param("classifier", name)
             for sc in scoring:
-                mean_val = np.mean(scores(f"test_{sc}"))
+                mean_val = np.mean(scores[f"test_{sc}"])
                 std_val = np.std(scores[f"test_{sc}"])
                 mlflow.log_metric(f"mean_{sc}", mean_val)
                 mlflow.log_metric(f"std_{sc}", std_val)
                 logger.info(f"{name} - {sc}: {mean_val:.4f} ± {std_val:.4f}")
-                
+
             roc_auc_mean = np.mean(scores["test_roc_auc"])
             if roc_auc_mean > best_score:
                 best_score = roc_auc_mean
                 best_model_name = name
-                best_pipeline = clone(final_pipe)
+                # Clone and fit on all data
+                from sklearn.base import clone
+                best_pipeline = clone(pipe)
                 best_pipeline.fit(X, y)
-                
-            mlflow.sklearn.log_model(final_pipe, "model")
-            mlflow.end_run()
+
+            mlflow.sklearn.log_model(pipe, "model")
             
     if best_pipeline is not None:
         model_path = model_dir / "best_model.pkl"

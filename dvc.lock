@@ -1,0 +1,48 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -c "from src.data_loader import load_data; 
+      df=load_data('data/raw/dataset.csv'); 
+      df.to_csv('data/processed/cleaned.csv', index=False)"
+    deps:
+    - path: data/raw/dataset.csv
+      hash: md5
+      md5: 3d16efdae68fa0d0237bf80f22525940
+      size: 322083
+    - path: src/data_loader.py
+      hash: md5
+      md5: 1370e8fcf02fce326df5a0b0d2eef95b
+      size: 1261
+    outs:
+    - path: data/processed/cleaned.csv
+      hash: md5
+      md5: 11c4376cfad97c57ef8c02a005595258
+      size: 302699
+  train:
+    cmd: python -m src.train
+    deps:
+    - path: data/processed/cleaned.csv
+      hash: md5
+      md5: 11c4376cfad97c57ef8c02a005595258
+      size: 302699
+    - path: src/data_loader.py
+      hash: md5
+      md5: 1370e8fcf02fce326df5a0b0d2eef95b
+      size: 1261
+    - path: src/preprocess.py
+      hash: md5
+      md5: 98c7c2afc774a1d1e1af04ac0d25953f
+      size: 4036
+    - path: src/train.py
+      hash: md5
+      md5: 70b23e026090b73683c22788608e2426
+      size: 2940
+    - path: src/utils.py
+      hash: md5
+      md5: f878821b862fc42e5b316102b8814d04
+      size: 478
+    outs:
+    - path: models/best_model.pkl
+      hash: md5
+      md5: 232a5af0ba9dca0a36b1fafeb59feda3
+      size: 38918
