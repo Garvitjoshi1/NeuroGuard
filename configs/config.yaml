@@ -1,0 +1,9 @@
+dataset:
+  raw_path: ml\data\raw\stroke_data.csv
+
+training:
+  random_state: 42
+  test_size: 0.2
+
+model:
+  target: stroke
