@@ -1,3 +1,4 @@
+from ml.data.validate import DataValidator
 from pathlib import Path
 import logging
 
@@ -61,7 +62,7 @@ def dataset_summary(df: pd.DataFrame) -> None:
         f"{df.memory_usage(deep=True).sum() /1024:.2f} KB"
     )
 
-#==============DDISPLAY SAMPLE RECORD=======================
+#==============DISPLAY SAMPLE RECORD=======================
 
 def preview_data(df: pd.DataFrame,rows: int = 5) -> None:
     print("\nPreview\n")
@@ -81,4 +82,36 @@ def get_schema(df: pd.DataFrame) -> pd.DataFrame:
     return schema
 
 #==============TARGET COLUMN VALIDATION=======================
+def validate_target(
+        df: pd.DataFrame,
+        target_column: str
+) -> None:
+    if target_column not in df.columns:
+        raise ValueError(
+            f"Target Column '{target_column}' not found."
+        )
+    logger.info(
+        f"Target column '{target_column} found."
+    )
 
+#==============MAIN FUNCTION=======================
+
+def main():
+    config = load_config()
+    df = load_dataset(config)
+    validator = DataValidator(df)
+    dataset_summary(df)
+    preview_data(df)
+    validate_target(
+        df,
+        config['model']['target']
+    )
+    schema = get_schema(df)
+    validator.generate_report(
+        config["model"]["target"]
+    )
+    print("\nSchema Information \n")
+    print(schema)
+
+if __name__ == "__main__":
+    main()
