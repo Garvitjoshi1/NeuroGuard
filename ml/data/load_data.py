@@ -45,3 +45,40 @@ def load_dataset(config: dict) -> pd.DataFrame:
 
 #==============DATASET SUMMARY=======================
 
+def dataset_summary(df: pd.DataFrame) -> None:
+    print(f"Rows: {df.shape[0]}")
+    print(f"Columns: {df.shape[1]}")
+    print(f"\nColumn Names")
+
+    for col in df.columns:
+        print(f"- {col}")
+
+    print("\nData Types")
+    print(df.dtypes)
+
+    print("\nMemory Usage")
+    print(
+        f"{df.memory_usage(deep=True).sum() /1024:.2f} KB"
+    )
+
+#==============DDISPLAY SAMPLE RECORD=======================
+
+def preview_data(df: pd.DataFrame,rows: int = 5) -> None:
+    print("\nPreview\n")
+    print(df.head(rows))
+
+#==============SCHEMA EXTRACTION=======================
+
+def get_schema(df: pd.DataFrame) -> pd.DataFrame:
+    schema =pd.DataFrame({
+        "Columns": df.columns,
+        "Data Type": df.dtypes.astype(str),
+        "Non null Count": df.count().values,
+        "Null Count": df.isna().sum().values,
+        "UNique Values": df.nunique().values
+    })
+
+    return schema
+
+#==============TARGET COLUMN VALIDATION=======================
+
