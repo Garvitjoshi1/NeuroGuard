@@ -1,0 +1,13 @@
+,Data Type,Non Null,Unique
+id,int64,5110,5110
+gender,str,5110,3
+age,float64,5110,104
+hypertension,int64,5110,2
+heart_disease,int64,5110,2
+ever_married,str,5110,2
+work_type,str,5110,5
+Residence_type,str,5110,2
+avg_glucose_level,float64,5110,3979
+bmi,float64,4909,418
+smoking_status,str,5110,4
+stroke,int64,5110,2

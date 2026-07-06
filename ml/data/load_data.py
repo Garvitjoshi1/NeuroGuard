@@ -1,4 +1,4 @@
-from ml.data.validate import DataValidator
+from ml.data.validate import DatasetValidator
 from pathlib import Path
 import logging
 
@@ -91,7 +91,7 @@ def validate_target(
             f"Target Column '{target_column}' not found."
         )
     logger.info(
-        f"Target column '{target_column} found."
+        f"Target column '{target_column}' found."
     )
 
 #==============MAIN FUNCTION=======================
@@ -99,19 +99,17 @@ def validate_target(
 def main():
     config = load_config()
     df = load_dataset(config)
-    validator = DataValidator(df)
+    validator = DatasetValidator(df)
     dataset_summary(df)
     preview_data(df)
     validate_target(
         df,
         config['model']['target']
     )
-    schema = get_schema(df)
     validator.generate_report(
         config["model"]["target"]
     )
     print("\nSchema Information \n")
-    print(schema)
 
 if __name__ == "__main__":
     main()
